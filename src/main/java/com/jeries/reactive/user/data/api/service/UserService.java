@@ -79,12 +79,17 @@ public class UserService {
         }
     }
 
-    public Mono<RuntimeException> handleErrorResponse(ClientResponse clientResponse) {
+    /**
+     * Error Handling must be further developed
+     * @param clientResponse
+     * @return
+     */
+    public Mono<WebClientResponseException> handleErrorResponse(ClientResponse clientResponse) {
 
         Mono<String> error = clientResponse.bodyToMono(String.class);
         return error.flatMap((message) -> {
             log.error("Error Status Code : " + clientResponse.rawStatusCode() + " - Exception message : " + message);
-            throw new RuntimeException(message);
+            throw new WebClientResponseException(clientResponse.statusCode().value(), clientResponse.statusCode().getReasonPhrase(), null, null, null);
         });
 
     }
