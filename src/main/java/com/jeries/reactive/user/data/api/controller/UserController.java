@@ -18,9 +18,15 @@ public class UserController {
     UserService userService;
 
     private final String USER_ID = "/user/{id}";
-    private final String USER_ID_COMMENTS = "/user/{id}/comments";
 
-    
+    /**
+     * Mono and Flux (WebFlux Framework) is used to asynchronously fetch data from the user/posts API.
+     *
+     * The time that takes to finish the two asynchronous requests is determined by the longest request
+     * and not by the combined time of both requests.
+     * @param id
+     * @return
+     */
     @RequestMapping(value=USER_ID, method = RequestMethod.GET)
     @CrossOrigin
     public Mono<ResponseEntity<User>> getUser(@PathVariable(value = "id") String id) {
@@ -37,16 +43,7 @@ public class UserController {
                 .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
 
-
         return responseEntityMono;
     }
 
-    @RequestMapping(value=USER_ID_COMMENTS, method = RequestMethod.GET)
-    @CrossOrigin
-    public Flux<Comment> getUserComments(@PathVariable(value = "id") String id) {
-
-        Flux<Comment> comments = userService.getCommentsByUser(id);
-
-        return comments;
-    }
 }
