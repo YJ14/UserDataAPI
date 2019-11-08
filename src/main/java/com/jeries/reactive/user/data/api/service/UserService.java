@@ -81,7 +81,6 @@ public class UserService {
         }
     }
 
-
     public Mono<RuntimeException> handleErrorResponse(ClientResponse clientResponse) {
 
         Mono<String> error = clientResponse.bodyToMono(String.class);

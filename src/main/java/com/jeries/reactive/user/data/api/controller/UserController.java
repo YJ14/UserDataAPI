@@ -5,6 +5,7 @@ import com.jeries.reactive.user.data.api.model.User;
 import com.jeries.reactive.user.data.api.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,11 +22,18 @@ public class UserController {
 
     @RequestMapping(value=USER_ID, method = RequestMethod.GET)
     @CrossOrigin
-    public Mono<User> getUserById(@PathVariable(value = "id") String id) {
+    public Mono<ResponseEntity<User>> getUserWithCommentsById(@PathVariable(value = "id") String id) {
 
         Mono<User> user = userService.getUser(id);
 
-        return user;
+        //Flux<Comment> comments = userService.getCommentsByUser(id);
+
+        Mono<ResponseEntity<User>> responseEntityMono = user
+                .map(ResponseEntity::ok)
+                .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
+
+
+        return responseEntityMono;
     }
 
     @RequestMapping(value=USER_ID_COMMENTS, method = RequestMethod.GET)
