@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 
@@ -15,6 +16,7 @@ public class UserService {
     private WebClient webClient;
 
     private static final String BASE_URL = "http://jsonplaceholder.typicode.com";
+    private static final String USER_BY_ID = "/users/";
 
 
     public UserService() {
@@ -24,13 +26,26 @@ public class UserService {
                 .build();
     }
 
+    /**
+     * Fetch User
+     * @param id
+     * @return
+     */
     public Mono<User> getUser(String id) {
 
-        Mono<User> user = this.webClient.get().uri("/users/" + id)
-                .retrieve()
-                .bodyToMono(User.class);
+        try {
+            Mono<User> user = this.webClient.get().uri(USER_BY_ID + id)
+                    .retrieve()
+                    .bodyToMono(User.class);
+            return user;
 
-        return user;
+        } catch (WebClientResponseException ex) {
+            log.error("[getUser] Error Status code is : " +  ex.getRawStatusCode() + " - Exception message :" + ex.getResponseBodyAsString());
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Exception in [getUser] ", ex);
+            throw ex;
+        }
     }
 
 
