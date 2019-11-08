@@ -1,11 +1,13 @@
 package com.jeries.reactive.user.data.api.service;
 
+import com.jeries.reactive.user.data.api.model.Comment;
 import com.jeries.reactive.user.data.api.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
@@ -17,6 +19,7 @@ public class UserService {
 
     private static final String BASE_URL = "http://jsonplaceholder.typicode.com";
     private static final String USER_BY_ID = "/users/";
+    private static final String COMMENTS_BY_ID = "posts?userId=";
 
 
     public UserService() {
@@ -44,6 +47,28 @@ public class UserService {
             throw ex;
         } catch (Exception ex) {
             log.error("Exception in [getUser] ", ex);
+            throw ex;
+        }
+    }
+
+    /**
+     * Fetch User Comments
+     * @param id
+     * @return
+     */
+    public Flux<Comment> getCommentsByUser(String id) {
+
+        try {
+            Flux<Comment> comments = this.webClient.get().uri(COMMENTS_BY_ID + id)
+                    .retrieve()
+                    .bodyToFlux(Comment.class);
+            return comments;
+
+        } catch (WebClientResponseException ex) {
+            log.error("[getCommentsByUser] Error Status Code  " +  ex.getRawStatusCode() + " - Exception message : " + ex.getResponseBodyAsString());
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Exception in [getCommentsByUser] ", ex);
             throw ex;
         }
     }

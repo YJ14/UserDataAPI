@@ -1,10 +1,12 @@
 package com.jeries.reactive.user.data.api.controller;
 
+import com.jeries.reactive.user.data.api.model.Comment;
 import com.jeries.reactive.user.data.api.model.User;
 import com.jeries.reactive.user.data.api.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -15,7 +17,7 @@ public class UserController {
     UserService userService;
 
     private final String USER_ID = "/user/{id}";
-
+    private final String USER_ID_COMMENTS = "/user/{id}/comments";
 
     @RequestMapping(value=USER_ID, method = RequestMethod.GET)
     @CrossOrigin
@@ -24,5 +26,14 @@ public class UserController {
         Mono<User> user = userService.getUser(id);
 
         return user;
+    }
+
+    @RequestMapping(value=USER_ID_COMMENTS, method = RequestMethod.GET)
+    @CrossOrigin
+    public Flux<Comment> getUserComments(@PathVariable(value = "id") String id) {
+
+        Flux<Comment> comments = userService.getCommentsByUser(id);
+
+        return comments;
     }
 }
