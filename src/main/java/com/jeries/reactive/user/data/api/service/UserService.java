@@ -4,7 +4,9 @@ import com.jeries.reactive.user.data.api.model.Comment;
 import com.jeries.reactive.user.data.api.model.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
@@ -22,6 +24,10 @@ public class UserService {
     private static final String COMMENTS_BY_ID = "posts?userId=";
 
 
+    /**
+     *  WebClient will replace soon the RestTemplate
+     *  WebClient is thread-safe and reactive (asynchronous and non-blocking).
+     */
     public UserService() {
         this.webClient = WebClient.builder()
                 .baseUrl(BASE_URL)
@@ -39,6 +45,7 @@ public class UserService {
         try {
             Mono<User> user = this.webClient.get().uri(USER_BY_ID + id)
                     .retrieve()
+                    .onStatus(HttpStatus::is4xxClientError, clientResponse -> handleErrorResponse(clientResponse))
                     .bodyToMono(User.class);
             return user;
 
@@ -61,6 +68,7 @@ public class UserService {
         try {
             Flux<Comment> comments = this.webClient.get().uri(COMMENTS_BY_ID + id)
                     .retrieve()
+                    .onStatus(HttpStatus::is4xxClientError, clientResponse -> handleErrorResponse(clientResponse))
                     .bodyToFlux(Comment.class);
             return comments;
 
@@ -73,5 +81,15 @@ public class UserService {
         }
     }
 
+
+    public Mono<RuntimeException> handleErrorResponse(ClientResponse clientResponse) {
+
+        Mono<String> error = clientResponse.bodyToMono(String.class);
+        return error.flatMap((message) -> {
+            log.error("Error Status Code : " + clientResponse.rawStatusCode() + " - Exception message : " + message);
+            throw new RuntimeException(message);
+        });
+
+    }
 
 }
