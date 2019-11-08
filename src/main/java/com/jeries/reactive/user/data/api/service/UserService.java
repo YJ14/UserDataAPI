@@ -2,6 +2,7 @@ package com.jeries.reactive.user.data.api.service;
 
 import com.jeries.reactive.user.data.api.model.Comment;
 import com.jeries.reactive.user.data.api.model.User;
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import reactor.core.publisher.Mono;
 
 @Service
 @Slf4j
+@AllArgsConstructor
 public class UserService {
 
     private WebClient webClient;
@@ -36,7 +38,8 @@ public class UserService {
     }
 
     /**
-     * Fetch User
+     * Fetching the User (getUser + getCommentsByUser) is done in two separate asynchronous requests.
+     * Error Handling is basic, covers only 404
      * @param id
      * @return
      */
@@ -58,11 +61,6 @@ public class UserService {
         }
     }
 
-    /**
-     * Fetch User Comments
-     * @param id
-     * @return
-     */
     public Flux<Comment> getCommentsByUser(String id) {
 
         try {

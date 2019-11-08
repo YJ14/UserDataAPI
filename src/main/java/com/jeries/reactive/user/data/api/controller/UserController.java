@@ -20,15 +20,20 @@ public class UserController {
     private final String USER_ID = "/user/{id}";
     private final String USER_ID_COMMENTS = "/user/{id}/comments";
 
+    
     @RequestMapping(value=USER_ID, method = RequestMethod.GET)
     @CrossOrigin
-    public Mono<ResponseEntity<User>> getUserWithCommentsById(@PathVariable(value = "id") String id) {
+    public Mono<ResponseEntity<User>> getUser(@PathVariable(value = "id") String id) {
 
         Mono<User> user = userService.getUser(id);
+        Flux<Comment> commentsByUser = userService.getCommentsByUser(id);
 
-        //Flux<Comment> comments = userService.getCommentsByUser(id);
+        // Combine Mono (user) and Flux (comments) in a functional style
+        Mono<User> userInfo = user.flatMap(u -> commentsByUser.collectList().map(comments -> new User(u, comments)));
 
-        Mono<ResponseEntity<User>> responseEntityMono = user
+        // Wrap Mono in ResponseEntity to handle HTTP Responses / Error Responses
+        // Error Responses can be personalised by creating a custom class that extends the Response Class
+        Mono<ResponseEntity<User>> responseEntityMono = userInfo
                 .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
 
