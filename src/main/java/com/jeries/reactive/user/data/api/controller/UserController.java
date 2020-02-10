@@ -28,7 +28,6 @@ public class UserController {
      * @return
      */
     @RequestMapping(value=USER_ID, method = RequestMethod.GET)
-    @CrossOrigin
     public Mono<ResponseEntity<User>> getUser(@PathVariable(value = "id") String id) {
 
         Mono<User> user = userService.getUser(id);
